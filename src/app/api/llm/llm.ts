@@ -12,13 +12,12 @@ export async function postLlm(req: Request) {
           console.error(`Error: ${error}`);
           return reject(NextResponse.json({ error: "Error running model." }, { status: 500 }));
         }
+        console.log('stdout', stdout);
 
-        // console.log("stdout:", stdout);
-        // console.log("stderr:", stderr);
-
-        resolve(NextResponse.json({ result: stdout }, { status: 200 }));
+        resolve(NextResponse.json({ result: stdout.trim() }, { status: 200 }));
       });
     });
+    console.log('temp', await temp);
     return await temp
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });

@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import axios from 'axios';
 
 export default function Home() {
   const [prompt, setPrompt] = useState('');
-  const [result, setResult] = useState('');
+  const [result, setResult]: [Array<string>, Dispatch<SetStateAction<Array<string>>>] = useState<Array<string>>([]);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     try {
       const response = await axios.post('/api/llm', { prompt });
-      console.log('response', response);
-      setResult(response.data.result);
+
+      const formattedResult = response.data.result.split('\\n\\n');
+      setResult(formattedResult);
     } catch (error) {
       console.error(error);
-      setResult('Error generating response');
+      setResult(['Error generating response']);
     }
   };
 
@@ -33,7 +34,11 @@ export default function Home() {
       </form>
       <div>
         <h2>Result:</h2>
-        <p>{result}</p>
+        {result.map((res, key) => {
+          return (
+            <p key={key}>{res}</p>
+          )
+        })}
       </div>
     </div>
   );
