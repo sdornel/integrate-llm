@@ -6,19 +6,17 @@ export async function postLlm(req: Request) {
     const body = await req.json();
     const { prompt } = body;
   
-    const temp = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       exec(`/scripts/venv/bin/python3 ./scripts/run_model.py "${prompt}"`, (error, stdout, stderr) => {
         if (error) {
           console.error(`Error: ${error}`);
           return reject(NextResponse.json({ error: "Error running model." }, { status: 500 }));
         }
-        console.log('stdout', stdout);
 
-        resolve(NextResponse.json({ result: stdout.trim() }, { status: 200 }));
+        resolve(NextResponse.json({ result: stdout }, { status: 200 }));
       });
     });
-    console.log('temp', await temp);
-    return await temp
+
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
