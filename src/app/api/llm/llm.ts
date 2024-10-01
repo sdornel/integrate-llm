@@ -16,7 +16,6 @@ export async function postLlm(req: Request) {
         resolve(NextResponse.json({ result: stdout }, { status: 200 }));
       });
     });
-
   } catch (error) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
