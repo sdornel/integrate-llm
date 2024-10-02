@@ -4,8 +4,9 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import axios from 'axios';
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt]: [string, Dispatch<SetStateAction<string>>] = useState<string>('');
   const [result, setResult]: [Array<string>, Dispatch<SetStateAction<Array<string>>>] = useState<Array<string>>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
