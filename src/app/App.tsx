@@ -38,11 +38,11 @@ export default function Home() {
           Submit
         </button>
       </form>
-      <div className="mt-6 w-full max-w-lg">
+      <div className="mt-6 w-full max-w-lg bg-white p-4 rounded-md shadow mb-2">
         <h2 className="text-xl font-semibold mb-4">Result:</h2>
         {result.map((res, key) => {
           return (
-            <p key={key} className="bg-white p-4 rounded-md shadow mb-2">{res}</p>
+            <p key={key}>{res}</p>
           )
         })}
       </div>
