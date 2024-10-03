@@ -31,4 +31,5 @@ if __name__ == "__main__":
     gpt3_response = generate_gpt3_response(prompt)
     
     # Send output to Node llm.ts file
-    print(json.dumps(gpt3_response))
+    # print(json.dumps(gpt3_response))
+    print(json.dumps(gpt3_response, ensure_ascii=False))
