@@ -13,7 +13,7 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await axios.post('/api/llm', { prompt });
-
+      console.log('response', response); // for debugging
       const formattedResult = response.data.result.split('\\n\\n');
       setResult(formattedResult);
     } catch (error) {
