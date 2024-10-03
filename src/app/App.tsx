@@ -10,6 +10,7 @@ export default function Home() {
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post('/api/llm', { prompt });
 
@@ -18,6 +19,8 @@ export default function Home() {
     } catch (error) {
       console.error(error);
       setResult(['Error generating response']);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,13 +42,17 @@ export default function Home() {
           Submit
         </button>
       </form>
+
       <div className="mt-6 w-full max-w-lg bg-white p-4 rounded-md shadow mb-2">
-        <h2 className="text-xl font-semibold mb-4">Result:</h2>
-        {result.map((res, key) => {
-          return (
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          result.map((res, key) => (
             <p key={key}>{res}</p>
-          )
-        })}
+          ))
+        )}
       </div>
     </div>
   );
