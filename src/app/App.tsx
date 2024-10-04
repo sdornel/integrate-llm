@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import axios from 'axios';
 
 export default function Home() {
@@ -10,6 +10,12 @@ export default function Home() {
   const [listening, setListening] = useState(false);
 
   let recognition;
+
+  useEffect(() => {
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+  });
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
