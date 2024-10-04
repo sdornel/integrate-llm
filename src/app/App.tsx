@@ -27,6 +27,18 @@ export default function Home() {
     }
   };
 
+  const startListening = () => {
+    // if (recognition) {
+      // recognition.start();
+      setListening(true);
+    // }
+  };
+
+  const stopListening = () => {
+
+    setListening(false);
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
       <h1 className="text-3xl font-bold mb-4">K-GPT</h1>
@@ -55,6 +67,23 @@ export default function Home() {
           result.map((res, key) => (
             <p key={key}>{res}</p>
           ))
+        )}
+      </div>
+
+      <div className="mt-6">
+        <button
+          onClick={startListening}
+          className="p-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition"
+        >
+          {listening ? 'Listening...' : 'Start Voice Input'}
+        </button>
+        {listening && (
+          <button
+            onClick={stopListening}
+            className="ml-4 p-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 transition"
+          >
+            Stop Listening
+          </button>
         )}
       </div>
     </div>
