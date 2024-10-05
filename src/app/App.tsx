@@ -1,27 +1,67 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react';
 import axios from 'axios';
+import { Tooltip } from '@nextui-org/tooltip';
+
+type SpeechRecognitionType = typeof window.SpeechRecognition | typeof window.webkitSpeechRecognition;
 
 export default function Home() {
   const [prompt, setPrompt]: [string, Dispatch<SetStateAction<string>>] = useState<string>('');
   const [result, setResult]: [Array<string>, Dispatch<SetStateAction<Array<string>>>] = useState<Array<string>>([]);
-  const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [listening, setListening] = useState<boolean>(false);
+  const [browserSupportsVoice, setBrowserSupportsVoice] = useState<boolean>(true);
 
-  let recognition;
+  let recognition: SpeechRecognitionType | undefined;
 
   useEffect(() => {
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new window.webkitSpeechRecognition();
+      console.log('recognition', recognition);
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US'; // TODO: make dynamic
 
-    const SpeechRecognition = (window as any).webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-  });
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+        setPrompt(transcript);
+      };
 
-  const handleSubmit = async (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('Speech recognition error detected: ' + event.error);
+      };
+
+      if (listening) {
+        recognition.start();
+      } else {
+        recognition.stop();
+      }
+    } else {
+      setBrowserSupportsVoice(false);
+      console.error("Browser doesn't support speech recognition.");
+    }
+
+    // cleanup on unmount
+    return () => {
+      if (recognition) {
+        recognition.stop();
+      }
+    };
+  }, [listening]);
+
+  const handleListen = () => {
+    setListening(!listening);
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post('/api/llm', { prompt });
+      const response = await axios.post<{ result: string }>('/api/llm', { prompt });
       console.log('response', response); // for debugging
       const formattedResult = response.data.result.split('\\n\\n');
       setResult(formattedResult);
@@ -32,18 +72,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  const startListening = () => {
-    // if (recognition) {
-      // recognition.start();
-      setListening(true);
-    // }
-  };
-
-  const stopListening = () => {
-
-    setListening(false);
-  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
@@ -76,21 +104,19 @@ export default function Home() {
         )}
       </div>
 
-      <div className="mt-6">
-        <button
-          onClick={startListening}
-          className="p-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition"
-        >
-          {listening ? 'Listening...' : 'Start Voice Input'}
-        </button>
-        {listening && (
+      {/* new component for microphone? use store? */}
+      <div className="flex flex-col items-center">
+        <Tooltip content={!browserSupportsVoice ? 'Your browser does not support voice recognition' : ''}>
           <button
-            onClick={stopListening}
-            className="ml-4 p-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 transition"
+            onClick={handleListen}
+            className={`p-4 rounded-full text-white ${!browserSupportsVoice ? 'bg-gray-500' : listening ? 'bg-red-500' : 'bg-green-500'}`}
+            disabled={!browserSupportsVoice}
           >
-            Stop Listening
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 1v11m0 4v6m-6-6h12m-6-6a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
           </button>
-        )}
+        </Tooltip>
       </div>
     </div>
   );
