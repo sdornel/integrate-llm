@@ -17,9 +17,10 @@ def generate_gpt3_response(prompt):
             model = "gpt-3.5-turbo",
             messages = [
                 {"role": "user", "content": prompt},
-            ]
+            ],
+            stream=True
         )
-        return response.choices[0].message.content.strip()
+        return response
 
     except Exception as e:
         return f"Error occurred: {str(e)}"
@@ -28,7 +29,5 @@ if __name__ == "__main__":
     # Read prompt from command-line argument (passed from Node.js)
     prompt = sys.argv[1] if len(sys.argv) > 1 else "Default prompt"
     
-    gpt3_response = generate_gpt3_response(prompt)
-    
-    # Send output to Node llm.ts file
-    print(gpt3_response)
+    for chunk in generate_gpt3_response(prompt):
+        print(chunk.choices[0].delta.content, end='', flush=True)

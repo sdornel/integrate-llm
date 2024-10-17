@@ -1,7 +1,6 @@
 "use client";
 
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react';
-import axios from 'axios';
 import { Tooltip } from '@nextui-org/tooltip';
 
 type SpeechRecognitionType = typeof window.SpeechRecognition | typeof window.webkitSpeechRecognition;
@@ -9,7 +8,6 @@ type SpeechRecognitionType = typeof window.SpeechRecognition | typeof window.web
 export default function Home() {
   const [prompt, setPrompt]: [string, Dispatch<SetStateAction<string>>] = useState<string>('');
   const [result, setResult]: [Array<string>, Dispatch<SetStateAction<Array<string>>>] = useState<Array<string>>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [listening, setListening] = useState<boolean>(false);
   const [browserSupportsVoice, setBrowserSupportsVoice] = useState<boolean>(true);
 
@@ -18,7 +16,6 @@ export default function Home() {
   useEffect(() => {
     if ('webkitSpeechRecognition' in window) {
       recognition = new window.webkitSpeechRecognition();
-      console.log('recognition', recognition);
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-US'; // TODO: make dynamic
@@ -59,17 +56,38 @@ export default function Home() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(true);
+    setResult([]); // Clear previous results
+  
     try {
-      const response = await axios.post<{ result: string }>('/api/llm', { prompt });
-      console.log('response', response); // for debugging
-      const formattedResult = response.data.result.split('\\n\\n');
-      setResult(formattedResult);
+      const response = await fetch('/api/llm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+  
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+  
+      let accumulatedResult = ''; // This stores the accumulated text
+  
+      while (!done) {
+        const { value, done: readerDone } = await reader?.read() ?? {};
+        if (readerDone) {
+          done = readerDone;
+        }
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedResult += chunk;
+  
+          setResult((prevResult) => [...prevResult, chunk]);
+        }
+      }
     } catch (error) {
       console.error(error);
       setResult(['Error generating response']);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -93,15 +111,9 @@ export default function Home() {
       </form>
 
       <div className="mt-6 w-full max-w-lg bg-white p-4 rounded-md shadow mb-2">
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          result.map((res, key) => (
-            <p key={key}>{res}</p>
-          ))
-        )}
+          {result.map((res, key) => (
+            <span key={key}>{res}</span>
+          ))}
       </div>
 
       {/* new component for microphone? use store? */}
