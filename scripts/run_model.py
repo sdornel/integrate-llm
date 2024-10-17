@@ -30,4 +30,6 @@ if __name__ == "__main__":
     prompt = sys.argv[1] if len(sys.argv) > 1 else "Default prompt"
     
     for chunk in generate_gpt3_response(prompt):
-        print(chunk.choices[0].delta.content, end='', flush=True)
+        content = chunk.choices[0].delta.content
+        if content:
+            print(content, end = '', flush = True)
