@@ -10,6 +10,7 @@ export default function Home() {
   const [result, setResult]: [Array<string>, Dispatch<SetStateAction<Array<string>>>] = useState<Array<string>>([]);
   const [listening, setListening] = useState<boolean>(false);
   const [browserSupportsVoice, setBrowserSupportsVoice] = useState<boolean>(true);
+  const [lang, setLang] = useState<string>('en-US');
 
   let recognition: SpeechRecognitionType | undefined;
 
@@ -18,7 +19,7 @@ export default function Home() {
       recognition = new window.webkitSpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'en-US'; // TODO: make dynamic
+      recognition.lang = lang;
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = Array.from(event.results)
@@ -94,6 +95,11 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
       <h1 className="text-3xl font-bold mb-4">K-GPT</h1>
+      <br/>
+      <select onChange={(e) => setLang(e.target.value)}>
+        <option value="en-US">English</option>
+        <option value="fr-FR">French</option>
+      </select>
       <form onSubmit={handleSubmit} className="w-full max-w-lg">
         <textarea
           value={prompt}
