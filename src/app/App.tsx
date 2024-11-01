@@ -11,6 +11,7 @@ export default function Home() {
   const [listening, setListening] = useState<boolean>(false);
   const [browserSupportsVoice, setBrowserSupportsVoice] = useState<boolean>(true);
   const [lang, setLang] = useState<string>('en-US');
+  const [loading, setLoading] = useState<boolean>(false);
 
   let recognition: SpeechRecognitionType | undefined;
 
@@ -60,6 +61,7 @@ export default function Home() {
     setResult([]); // Clear previous results
   
     try {
+      setLoading(true);
       const response = await fetch('/api/llm', {
         method: 'POST',
         headers: {
@@ -86,6 +88,7 @@ export default function Home() {
           setResult((prevResult) => [...prevResult, chunk]);
         }
       }
+      setLoading(false);
     } catch (error) {
       console.error(error);
       setResult(['Error generating response']);
@@ -110,7 +113,10 @@ export default function Home() {
         />
         <button 
           type="submit" 
-          className="w-full mt-4 p-2 bg-blue-500 text-white rounded-md shadow hover:bg-blue-600 transition"
+          disabled={loading}
+          className={`w-full mt-4 p-2 rounded-md shadow transition ${
+            loading ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
         >
           Submit
         </button>
@@ -122,7 +128,6 @@ export default function Home() {
           ))}
       </div>
 
-      {/* new component for microphone? use store? */}
       <div className="flex flex-col items-center">
         <Tooltip content={!browserSupportsVoice ? 'Your browser does not support voice recognition' : ''}>
           <button
